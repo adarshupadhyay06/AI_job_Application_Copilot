@@ -15,14 +15,33 @@ def health_check() -> dict[str, str]:
 
 @app.post("/analyze", response_model=JobAnalysisResponse)
 def analyze_job(request: JobAnalysisRequest) -> JobAnalysisResponse:
+    candidate_profile = {
+        "candidate_name": request.candidate_name or "",
+        "email": request.email or "",
+        "phone": request.phone or "",
+        "location": request.location or "",
+        "linkedin_url": request.linkedin_url or "",
+        "github_url": request.github_url or "",
+        "portfolio_url": request.portfolio_url or "",
+        "years_of_experience": request.years_of_experience or "",
+        "target_role": request.target_role or "",
+        "skills_text": request.skills_text or "",
+        "education_text": request.education_text or "",
+        "experience_text": request.experience_text or "",
+        "projects_text": request.projects_text or "",
+        "certifications_text": request.certifications_text or "",
+    }
+
     result = job_agent.invoke(
         {
             "thread_id": request.thread_id,
-            "resume_path": request.resume_path,
+            "input_mode": request.input_mode,
+            "resume_path": request.resume_path or "",
             "job_description": request.job_description or "",
             "job_url": request.job_url or "",
             "job_title": "Job Opening",
             "company_name": "Target Company",
+            "candidate_profile": candidate_profile,
         },
         config={"configurable": {"thread_id": request.thread_id}},
     )
@@ -45,6 +64,7 @@ def analyze_job(request: JobAnalysisRequest) -> JobAnalysisResponse:
 
     return JobAnalysisResponse(
         run_id=run_id,
+        input_mode=request.input_mode,
         **payload,
         approval_needed=True,
         metadata={"planner_steps": result.get("planner_steps", [])},

@@ -10,6 +10,7 @@ from backend.graph.nodes.jd_analyzer import jd_analyzer_node
 from backend.graph.nodes.optimizer import optimizer_node
 from backend.graph.nodes.planner import planner_node
 from backend.graph.nodes.resume_analyzer import resume_analyzer_node
+from backend.graph.nodes.resume_builder import resume_builder_node
 from backend.graph.state import JobAgentState
 
 
@@ -21,6 +22,7 @@ graph = StateGraph(JobAgentState)
 
 graph.add_node("planner", planner_node)
 graph.add_node("jd_analyzer", jd_analyzer_node)
+graph.add_node("resume_builder", resume_builder_node)
 graph.add_node("resume_analyzer", resume_analyzer_node)
 graph.add_node("gap_detector", gap_detector_node)
 graph.add_node("optimizer", optimizer_node)
@@ -30,7 +32,15 @@ graph.add_node("apply_helper", apply_helper_node)
 
 graph.add_edge(START, "planner")
 graph.add_edge("planner", "jd_analyzer")
-graph.add_edge("jd_analyzer", "resume_analyzer")
+graph.add_conditional_edges(
+    "jd_analyzer",
+    lambda state: "resume_builder" if state.get("input_mode") == "build_resume" else "resume_analyzer",
+    {
+        "resume_builder": "resume_builder",
+        "resume_analyzer": "resume_analyzer",
+    },
+)
+graph.add_edge("resume_builder", "gap_detector")
 graph.add_edge("resume_analyzer", "gap_detector")
 graph.add_edge("gap_detector", "optimizer")
 graph.add_edge("optimizer", "cover_letter")

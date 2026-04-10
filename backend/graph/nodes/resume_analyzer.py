@@ -5,7 +5,12 @@ from backend.utils.text_utils import extract_experience_phrase, extract_skills, 
 
 
 def resume_analyzer_node(state: JobAgentState) -> dict:
-    resume_text = extract_text_from_pdf(state["resume_path"])
+    resume_text = state.get("resume_text", "")
+    if not resume_text:
+        resume_path = state.get("resume_path")
+        if not resume_path:
+            raise ValueError("Resume path is required when no generated resume text is available.")
+        resume_text = extract_text_from_pdf(resume_path)
 
     fallback = {
         "summary": short_summary(resume_text),

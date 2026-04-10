@@ -4,6 +4,7 @@ This project is a LangGraph-based job application copilot that:
 
 - analyzes a job description
 - parses a resume PDF
+- builds a resume draft from profile data + job description
 - finds skill gaps
 - tailors the resume
 - writes a cover letter
@@ -84,6 +85,7 @@ uvicorn backend.app:app --reload
 ## Notes
 
 - Resume input expects a PDF path in the backend and a PDF upload in Streamlit.
+- The app supports two modes: tailor an existing resume or build one from profile data plus the JD.
 - Job input can be either a pasted description or a URL.
 - The project is designed as an assistive copilot, not a fully automatic job applier.
 - Application history and approvals are saved in `backend/db/sqlite.db`.
