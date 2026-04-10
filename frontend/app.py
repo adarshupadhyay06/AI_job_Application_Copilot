@@ -102,6 +102,7 @@ result = st.session_state["analysis_result"]
 
 if result:
     left_col, right_col = st.columns([1, 1])
+    safe_job_title = (result.job_title or "resume").replace("/", "-").replace("\\", "-").replace(" ", "_")
 
     with left_col:
         st.subheader("Match Analysis")
@@ -121,7 +122,21 @@ if result:
     with right_col:
         st.subheader("Human Approval")
         tailored_resume = st.text_area("Tailored Resume", value=result.tailored_resume, height=320)
+        st.download_button(
+            "Download Resume (.txt)",
+            data=tailored_resume,
+            file_name=f"{safe_job_title}_resume.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
         cover_letter = st.text_area("Cover Letter", value=result.cover_letter, height=240)
+        st.download_button(
+            "Download Cover Letter (.txt)",
+            data=cover_letter,
+            file_name=f"{safe_job_title}_cover_letter.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
 
         edited_answers: list[dict[str, str]] = []
         st.write("**Application Answers**")
@@ -129,6 +144,17 @@ if result:
             question = item.get("question", f"Question {index + 1}")
             answer = st.text_area(question, value=item.get("answer", ""), height=120, key=f"answer_{index}")
             edited_answers.append({"question": question, "answer": answer})
+
+        answers_text = "\n\n".join(
+            f"Q: {item['question']}\nA: {item['answer']}" for item in edited_answers
+        )
+        st.download_button(
+            "Download Application Answers (.txt)",
+            data=answers_text,
+            file_name=f"{safe_job_title}_application_answers.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
 
         if st.button("Approve final content", use_container_width=True):
             approve_run(
